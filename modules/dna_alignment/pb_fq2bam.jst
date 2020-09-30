@@ -7,33 +7,39 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 
 {% macro fq2bam(sample) %}
+- name: fq2bam
+  input:
   {% for rgid, rg in sample.read_groups.items() %}
     {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
     {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
-
-- name: fq2bam
-  input:
     - temp/fastqs/{{ r1fastq.basename }}
     - temp/fastqs/{{ r2fastq.basename }}
-  walltime: "4:00:00"
+  {% endfor %}
+  walltime: "10:00:00"
   sbatch_args: ['-p', 'gpu', '--nodelist=dback-gpu01']
   cmd: |
     rm -r "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}" || true
     mkdir -p "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}"
     mkdir -p "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}"
-    echo "{{ constants.phoenix.bwa_index }}"
 
+  {% for rgid, rg in sample.read_groups.items() %}
+    {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+    {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+    echo "{{ r1fastq.basename }}"
+    echo "{{ r2fastq.basename }}"
+  {% endfor %}
     module load parabricks/3.0.2
     pbrun fq2bam \
-    --ref /home/gotero/pipeline_testing/parabricks/parabricks_sample_data/Ref/Homo_sapiens_assembly38.fasta \
-    --in-fq \
-    "temp/fastqs/{{ r1fastq.basename }}" \
-    "temp/fastqs/{{ r2fastq.basename }}" \
-    --out-bam "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}.pb.bam" \
-    {% for vcf in constants.phoenix.gatk_known_sites %}
-      --knownSites "{{ vcf }}" \
-    {% endfor %}
-    --out-recal-file "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.recal_data.table"
+    --ref "/home/gotero/pipeline_testing/parabricks/parabricks_sample_data/Ref/Homo_sapiens_assembly38.fasta" \
+  {% for rgid, rg in sample.read_groups.items() %}
+    {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+    {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+    --in-fq "temp/fastqs/{{ r1fastq.basename }}" "temp/fastqs/{{ r2fastq.basename }}" \
   {% endfor %}
+    --out-bam "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}.pb.bam" \
+  {% for vcf in constants.phoenix.gatk_known_sites %}
+    --knownSites "{{ vcf }}" \
+  {% endfor %}
+    --out-recal-file "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}.recal_data.table"
 {% endmacro %}
 
