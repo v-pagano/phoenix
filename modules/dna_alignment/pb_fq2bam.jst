@@ -7,6 +7,7 @@
 {% from 'utilities/remove_files.jst' import remove_files with context %}
 
 {% macro fq2bam(sample) %}
+  {% set bam %}{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam{% endset %}
 - name: fq2bam
   input:
   {% for rgid, rg in sample.read_groups.items() %}
@@ -15,6 +16,7 @@
     - temp/fastqs/{{ r1fastq.basename }}
     - temp/fastqs/{{ r2fastq.basename }}
   {% endfor %}
+  output: {{ bam }}
   walltime: "10:00:00"
   sbatch_args: ['-p', 'gpu', '--nodelist=dback-gpu01']
   cmd: |
