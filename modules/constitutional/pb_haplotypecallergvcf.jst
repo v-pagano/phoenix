@@ -1,0 +1,27 @@
+{% from 'utilities/remove_files.jst' import remove_files with context %}
+
+# Call constitutional variants with haplotype caller. In order to call
+# variants, this step must be followed with genotype gvcfs task.
+{% macro pb_haplotypecallergvcf(sample, aligner='bwa', taskPrefix='Genome') %}
+{% set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
+{% set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}{% endset %}
+{% set gvcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.hc.g.vcf.gz{% endset %}
+
+- name: pb_haplotypecaller_gvcf_{{ sample.name }}_{{ aligner }}
+  input: {{ bam }}
+  output: {{ gvcf }}
+  walltime: "10:00:00"
+  sbatch_args: ['-p', 'gpu', '--nodelist=dback-gpu01']
+  cmd: |
+    module load parabricks/3.0.2
+
+    mkdir -p "{{ results_dir }}"
+
+    pbrun haplotypecaller \
+      --ref {{ constants.phoenix.reference_fasta }} \
+      --in-bam "{{ bam }}" \
+      --out-variants {{ gvcf }}
+
+{% endmacro %}
+

@@ -1,4 +1,5 @@
 {% from 'modules/constitutional/gatk_haplotypecallergvcf.jst' import haplotypecallergvcf with context %}
+{% from 'modules/constitutional/pb_haplotypecallergvcf.jst' import pb_haplotypecallergvcf with context %}
 {% from 'modules/constitutional/gatk_genotypegvcf.jst' import genotypegvcf with context %}
 {% from 'modules/constitutional/freebayes.jst' import freebayes with context %}
 {% from 'modules/constitutional/manta.jst' import manta_constitutional with context %}
@@ -13,6 +14,7 @@
 # on "tumor" samples with the exception of ichor that cna be run on tumor or constitutional.
 
 {%- macro constitutional_variant_calling(samples) %}
+{% set align_partition = alignPartition|default('CPU')|lower %}
 
 {%- for sample in samples.values() if sample.gltype in ('exome', 'genome') %}
 
@@ -28,7 +30,11 @@
 
     {%- if sample.subGroup|lower != 'tumor' %}
         {%- if tasks[taskPrefix+"_constitutional_snp_indel_caller_gatk_HaplotypeCaller"]|default(true) %}
-            {{- haplotypecallergvcf(sample, aligner='bwa', taskPrefix=taskPrefix) }}
+              {%- if align_partition == 'gpu' %}
+                {{- pb_haplotypecallergvcf(sample, aligner='bwa', taskPrefix=taskPrefix) }}
+              {% else %}
+                {{- haplotypecallergvcf(sample, aligner='bwa', taskPrefix=taskPrefix) }}
+              {% endif %}
         {% endif %}
         {%- if tasks[taskPrefix+"_constitutional_genotype_hc_gvcf_gatk_GenotypeGVCFs"]|default(true) %}
             {{- genotypegvcf(sample, aligner='bwa', taskPrefix=taskPrefix) }}
