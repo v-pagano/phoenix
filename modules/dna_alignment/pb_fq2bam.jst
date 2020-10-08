@@ -32,16 +32,18 @@
   {% endfor %}
     module load parabricks/3.0.2
     pbrun fq2bam \
-    --ref "{{ constants.phoenix.reference_fasta }}" \
+    --ref "{{ constants.phoenix.gpu_reference_fasta }}" \
   {% for rgid, rg in sample.read_groups.items() %}
     {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
     {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
     --in-fq "temp/fastqs/{{ r1fastq.basename }}" "temp/fastqs/{{ r2fastq.basename }}" \
   {% endfor %}
     --out-bam "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam" \
-  {% for vcf in constants.phoenix.gatk_known_sites %}
-    --knownSites "{{ vcf }}" \
-  {% endfor %}
-    --out-recal-file "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}.recal_data.table"
+  {% if tasks.Genome_alignment_base_recalibration_gatk is defined and tasks.Genome_alignment_base_recalibration_gatk %}
+    {% for vcf in constants.phoenix.gatk_known_sites %}
+      --knownSites "{{ vcf }}" \
+    {% endfor %}
+      --out-recal-file "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}.recal_data.table"
+  {% endif %}
 {% endmacro %}
 
