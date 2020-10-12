@@ -12,7 +12,7 @@
   input: {{ bam }}
   output: {{ gvcf }}
   walltime: "10:00:00"
-  sbatch_args: ['-p', 'gpu', '--nodelist=dback-gpu01']
+  sbatch_args: ['-p', 'gpu', '--nodelist=dback-gpu01', '-c', '40']
   cmd: |
     module load parabricks/3.0.2
 
