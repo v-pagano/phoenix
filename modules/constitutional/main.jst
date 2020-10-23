@@ -6,6 +6,7 @@
 {% from 'modules/constitutional/gridss.jst' import gridss_constitutional with context %}
 {% from 'modules/constitutional/strelka2.jst' import strelka2_constitutional with context %}
 {% from 'modules/constitutional/deepvariant.jst' import deepvariant with context %}
+{% from 'modules/constitutional/pb_deepvariant.jst' import pb_deepvariant with context %}
 {% from 'modules/constitutional/octopus.jst' import octopus_constitutional with context %}
 {% from 'modules/constitutional/ichorcna.jst' import ichorcna with context %}
 {% from 'modules/constitutional/mm_igtx_calling.jst' import mm_igtx_pairoscope with context %}
@@ -52,7 +53,11 @@
             {{- strelka2_constitutional(sample, aligner='bwa', taskPrefix=taskPrefix) }}
         {% endif %}
         {%- if tasks[taskPrefix+"_constitutional_snp_indel_caller_deepvariant"]|default(true) %}
-            {{- deepvariant(sample, aligner='bwa', taskPrefix=taskPrefix) }}
+            {%- if align_partition == 'gpu' %}
+                {{- pb_deepvariant(sample, aligner='bwa', taskPrefix=taskPrefix) }}
+            {% else %}
+                {{- deepvariant(sample, aligner='bwa', taskPrefix=taskPrefix) }}
+            {% endif %}
         {% endif %}
         {%- if tasks[taskPrefix+"_constitutional_snp_indel_caller_octopus"]|default(false) %}
             {{- octopus_constitutional(sample, aligner='bwa', taskPrefix=taskPrefix) }}
