@@ -9,6 +9,7 @@
 {% macro fq2bam(sample) %}
   {% set bam %}{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam{% endset %}
 - name: fq2bam
+  reset: predecessors
   input:
   {% for rgid, rg in sample.read_groups.items() %}
     {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
@@ -40,11 +41,29 @@
     --in-fq "temp/fastqs/{{ r1fastq.basename }}" "temp/fastqs/{{ r2fastq.basename }}" \
   {% endfor %}
     --out-bam "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam" \
+  {% if sample.gltype | lower == 'genome' %}
   {% if tasks.Genome_alignment_base_recalibration_gatk is defined and tasks.Genome_alignment_base_recalibration_gatk %}
     {% for vcf in constants.phoenix.gatk_known_sites %}
       --knownSites "{{ vcf }}" \
     {% endfor %}
       --out-recal-file "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}.recal_data.table"
+  {% endif %}
+  {% endif %}
+  {% if sample.gltype | lower == 'exome' %}
+  {% if tasks.Exome_alignment_base_recalibration_gatk is defined and tasks.Exome_alignment_base_recalibration_gatk %}
+    {% for vcf in constants.phoenix.gatk_known_sites %}
+      --knownSites "{{ vcf }}" \
+    {% endfor %}
+      --out-recal-file "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}.recal_data.table"
+  {% endif %}
+  {% endif %}
+  {% if sample.gltype | lower == 'genome' %}
+  {% if tasks.Genome_alignment_base_recalibration_gatk is defined and tasks.Genome_alignment_base_recalibration_gatk %}
+    {% for vcf in constants.phoenix.gatk_known_sites %}
+      --knownSites "{{ vcf }}" \
+    {% endfor %}
+      --out-recal-file "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}.recal_data.table"
+  {% endif %}
   {% endif %}
 {% endmacro %}
 

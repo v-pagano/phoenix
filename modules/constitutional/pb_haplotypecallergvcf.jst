@@ -9,6 +9,7 @@
 {% set gvcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.hc.g.vcf.gz{% endset %}
 
 - name: pb_haplotypecaller_gvcf_{{ sample.name }}_{{ aligner }}
+  reset: predecessors
   input: {{ bam }}
   output: {{ gvcf }}
   walltime: "10:00:00"
