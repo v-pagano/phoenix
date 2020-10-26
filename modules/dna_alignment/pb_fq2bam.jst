@@ -32,7 +32,7 @@
   {% endfor %}
     module load parabricks/3.1.1
     pbrun fq2bam \
-    --ref "{{ constants.phoenix.gpu_reference_fasta }}" \
+    --ref "{{ constants.phoenix.reference_fasta }}" \
     --bwa-options "-Y -K 100000000" \
   {% for rgid, rg in sample.read_groups.items() %}
     {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}

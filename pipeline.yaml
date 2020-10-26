@@ -348,7 +348,7 @@ constants:
     genome_subversion_name: hg38tgen
     gene_model_name: ensembl_v98
     capture_kit_path: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/gene_model/ensembl_v98/tool_resources/capture_kits
-    reference_fasta: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/genome_reference/GRCh38tgen_decoy_alts_hla.fa
+    reference_fasta: /home/tgenref/homo_sapiens/grch38_hg38/broad_resource_bundle/Homo_sapiens_assembly38.fasta
     gpu_reference_fasta: /home/vpagano/play/GRCh38tgen_decoy_alts_hla.fa
     reference_fasta_2bit: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/genome_reference/GRCh38tgen_decoy_alts_hla.2bit
     reference_fai: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/genome_reference/GRCh38tgen_decoy_alts_hla.fa.fai
