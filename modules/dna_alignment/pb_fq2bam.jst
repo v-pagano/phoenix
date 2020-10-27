@@ -8,7 +8,7 @@
 
 {% macro fq2bam(sample) %}
   {% set bam %}{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam{% endset %}
-- name: fq2bam
+- name: fq2bam_{{sample.name}}
   reset: predecessors
   input:
   {% for rgid, rg in sample.read_groups.items() %}

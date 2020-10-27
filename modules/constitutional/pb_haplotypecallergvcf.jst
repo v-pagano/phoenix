@@ -7,6 +7,7 @@
 {% set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}_{{ aligner }}{% endset %}
 {% set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}{% endset %}
 {% set gvcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.hc.g.vcf.gz{% endset %}
+{% set vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.hc.g.vcf{% endset %}
 
 - name: pb_haplotypecaller_gvcf_{{ sample.name }}_{{ aligner }}
   reset: predecessors
@@ -22,7 +23,8 @@
     pbrun haplotypecaller \
       --ref {{ constants.phoenix.reference_fasta }} \
       --in-bam "{{ bam }}" \
-      --out-variants {{ gvcf }}
+      --out-variants {{ vcf }}
 
+    gzip {{ vcf }}
 {% endmacro %}
 
