@@ -9,6 +9,7 @@
 {% macro fq2bam(sample) %}
   {% set bam %}{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam{% endset %}
 - name: fq2bam_{{sample.name}}
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
   reset: predecessors
   input:
   {% for rgid, rg in sample.read_groups.items() %}
@@ -28,10 +29,8 @@
   {% for rgid, rg in sample.read_groups.items() %}
     {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
     {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
-    echo "{{ r1fastq.basename }}"
-    echo "{{ r2fastq.basename }}"
   {% endfor %}
-    module load parabricks/3.1.1
+    module load parabricks/3.1.6
     pbrun fq2bam \
     --ref "{{ constants.phoenix.reference_fasta }}" \
     --bwa-options "-Y -K 100000000" \
