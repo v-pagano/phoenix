@@ -1,0 +1,36 @@
+# These macros are run on genome bams from the dna_alignment module.
+
+{% macro pb_bam_qc_gatk_collectmultiplemetrics(sample, aligner='bwa') %}
+{% if tasks["Genome_quality_control_stats_gatk_CollectMultipleMetrics"] or tasks["Exome_quality_control_stats_gatk_CollectMultipleMetrics"] %}
+  {% set task %}{{ sample.name }}_{{ aligner }}{% endset %}
+  {% set results_dir %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/stats{% endset %}
+  {% set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
+  {% set dna_metrics %}{{ results_dir }}/{{ bam|basename }}.wgs_metrics{% endset %}
+  {% set output_file %}{{ results_dir }}/{{ bam|basename }}.hs_metrics{% endset %}
+
+- name: pb_gatk_collectmultiplemetrics_{{ task }}
+  tags: [{{ sample.gltype }}, quality_control, stats, gatk_CollectMultipleMetrics, {{ sample.name }}]
+  input: {{ bam }}
+  output:
+    - {{ dna_metrics }}
+  reset: predecessors
+  walltime: "24:00:00"
+  sbatch_args: ['-p', 'gpu', '--nodelist=dback-gpu01', '-c', '40']
+  cmd: |
+    module load parabricks/3.1.6
+
+    mkdir -p {{ results_dir }}
+
+    pbrun collectmultiplemetrics \
+      --ref {{ constants.phoenix.reference_fasta }} \
+      --bam {{ bam }} \
+      --out-all-metrics {{ results_dir }}
+
+    pbrun bammetrics \
+      --ref {{ constants.phoenix.reference_fasta }} \
+      --bam {{ bam }} \
+      --out-metrics-file {{ output_file }}
+
+
+{% endif %}
+{% endmacro %}

@@ -16,6 +16,7 @@
 {% from 'modules/qc/bam_qc_genome.jst' import bam_qc_gatk_collectwgsmetrics with context %}
 {% from 'modules/qc/bam_qc_genome.jst' import bam_qc_gatk_collectwgsmetricswithnonzerocoverage with context %}
 {% from 'modules/qc/bam_qc_genome.jst' import bam_qc_gatk_collectrawwgsmetrics with context %}
+{% from 'modules/qc/pb_bam_qc.jst' import pb_bam_qc_gatk_collectmultiplemetrics with context %}
 
 # Performed on exomes
 {% from 'modules/qc/bam_qc_exome.jst' import bam_qc_gatk_collecthsmetrics with context %}
@@ -29,6 +30,7 @@
 {% from 'modules/qc/bam_qc_constitutional_dna.jst' import sex_check with context %}
 
 {% macro bam_qc(sample, aligner='bwa') %}
+  {% set align_partition = alignPartition|default('CPU')|lower %}
 
     {% if aligner == "cellranger_count" or aligner == "starSOLO" %}
       {% set libraryCount = 0 %}
@@ -72,40 +74,44 @@
     {% endif %}
 
     {# Tasks performed on all bams #}
-    {{- bam_qc_samtools_stats(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
-    {{- bam_qc_samtools_flagstat(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
-    {{- bam_qc_samtools_idxstats(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
-    {{- bam_qc_gatk_collectmultiplemetrics(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
-    {{- bam_qc_snpsniffer_geno(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
+    {% if align_partition == 'gpu' %}
+        {{- pb_bam_qc_gatk_collectmultiplemetrics(sample, aligner=aligner) }}
+    {% else %}
+      {{- bam_qc_samtools_stats(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
+      {{- bam_qc_samtools_flagstat(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
+      {{- bam_qc_samtools_idxstats(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
+      {{- bam_qc_gatk_collectmultiplemetrics(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
+      {{- bam_qc_snpsniffer_geno(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner) }}
 
-    {% if libraryCount > 1 %}
-      {% for sample_lb, sample_rgs in sample.read_groups.values()|groupby('rglb') %}
+      {% if libraryCount > 1 %}
+        {% for sample_lb, sample_rgs in sample.read_groups.values()|groupby('rglb') %}
 
-        {{- split_bam(sample, sample_lb, sample_rgs, aligner=aligner) }}
+          {{- split_bam(sample, sample_lb, sample_rgs, aligner=aligner) }}
 
-        {# General Library type specific tasks #}
-        {% if sample.gltype == 'rna' %}
-          {{- bam_qc_gatk_collectrnaseqmetrics(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
-          {{- bam_qc_rna_BTcell_loci(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
-        {% elif sample.gltype == 'genome' %}
-          {{- bam_qc_gatk_collectwgsmetrics(sample, libraryCount, sample_lb, aligner=aligner, bam_level=false) }}
-          {{- bam_qc_gatk_collectwgsmetricswithnonzerocoverage(sample, libraryCount, sample_lb, aligner=aligner, bam_level=false) }}
-          {{- bam_qc_gatk_collectrawwgsmetrics(sample, libraryCount, sample_lb, aligner=aligner, bam_level=false) }}
-        {% endif %}
+          {# General Library type specific tasks #}
+          {% if sample.gltype == 'rna' %}
+            {{- bam_qc_gatk_collectrnaseqmetrics(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
+            {{- bam_qc_rna_BTcell_loci(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
+          {% elif sample.gltype == 'genome' %}
+            {{- bam_qc_gatk_collectwgsmetrics(sample, libraryCount, sample_lb, aligner=aligner, bam_level=false) }}
+            {{- bam_qc_gatk_collectwgsmetricswithnonzerocoverage(sample, libraryCount, sample_lb, aligner=aligner, bam_level=false) }}
+            {{- bam_qc_gatk_collectrawwgsmetrics(sample, libraryCount, sample_lb, aligner=aligner, bam_level=false) }}
+          {% endif %}
 
-        {# Constitutional dna specific tasks #}
-        {% if sample.subGroup|lower == 'constitutional' and ( sample.gltype|lower == 'genome' or sample.gltype|lower == 'exome' )  %}
-          {{- bam_qc_verifybamid2(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
-          {{- sex_check(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
-        {% endif %}
+          {# Constitutional dna specific tasks #}
+          {% if sample.subGroup|lower == 'constitutional' and ( sample.gltype|lower == 'genome' or sample.gltype|lower == 'exome' )  %}
+            {{- bam_qc_verifybamid2(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
+            {{- sex_check(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
+          {% endif %}
 
-        {# Tasks performed on all bams #}
-        {{- bam_qc_samtools_stats(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
-        {{- bam_qc_samtools_flagstat(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
-        {{- bam_qc_samtools_idxstats(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
-        {{- bam_qc_gatk_collectmultiplemetrics(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
-        {{- bam_qc_snpsniffer_geno(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
-      {% endfor %}
+          {# Tasks performed on all bams #}
+          {{- bam_qc_samtools_stats(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
+          {{- bam_qc_samtools_flagstat(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
+          {{- bam_qc_samtools_idxstats(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
+          {{- bam_qc_gatk_collectmultiplemetrics(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
+          {{- bam_qc_snpsniffer_geno(sample, libraryCount, sample_lb, taskPrefix=taskPrefix, aligner=aligner, bam_level=false) }}
+        {% endfor %}
+      {% endif %}
     {% endif %}
 {% endmacro %}
 

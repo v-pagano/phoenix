@@ -21,6 +21,7 @@
   {% if align_partition == 'gpu' %}
     {% for sample in samples.values() if sample.gltype in ['genome', 'exome'] %}
       {{- fq2bam(sample) }}
+      {{- bam_qc(sample, aligner='bwa') }}
     {% endfor %}
   {% else %}
 
