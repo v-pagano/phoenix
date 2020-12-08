@@ -13,6 +13,7 @@
 
 {% macro dna_alignment(samples) %}
   {% set align_partition = alignPartition|default('CPU')|lower %}
+  {% set petaGene = petaGene|default(false) %}
   {% set alignment_style = dnaAlignmentStyle|default('tgen')|lower %}
   {# Not configurable by LIMS #}
   {% set reads_per_chunk = reads_per_chunk|default(40000000) %}

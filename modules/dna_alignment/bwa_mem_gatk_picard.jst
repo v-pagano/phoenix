@@ -34,6 +34,11 @@
     set -eu
     set -o pipefail
 
+    {% if petaGene %}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+      module load {{ constants.tools.petagene.module }}
+    {% endif %}
+
     rm -r "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ fastq.basename }}/" || true
     mkdir -p "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ fastq.basename }}/"
 
@@ -69,6 +74,11 @@
   cmd: |
     set -eu
     set -o pipefail
+
+    {% if petaGene %}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+      module load {{ constants.tools.petagene.module }}
+    {% endif %}
 
     module load {{ constants.tools.bwa.module }}
     module load {{ constants.tools.samtools.module }}
@@ -112,6 +122,12 @@
   cmd: |
     set -eu
     set -o pipefail
+
+    {% if petaGene %}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+      module load {{ constants.tools.petagene.module }}
+    {% endif %}
+
     module load {{ constants.tools.gatk.module }}
 
     mkdir -p "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/stats/"
@@ -151,6 +167,11 @@
   cmd: |
     set -eu
     set -o pipefail
+
+    {% if petaGene %}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+      module load {{ constants.tools.petagene.module }}
+    {% endif %}
 
     module load {{ constants.tools.gatk.module }}
 

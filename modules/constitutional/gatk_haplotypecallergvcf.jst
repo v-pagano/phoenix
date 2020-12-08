@@ -20,6 +20,8 @@
     set -eu
     set -o pipefail
 
+    export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+    module load {{ constants.tools.petagene.module }}
     module load {{ constants.tools.gatk.module }}
 
     mkdir -p "{{ temp_dir }}"
@@ -54,6 +56,8 @@
     set -eu
     set -o pipefail
 
+    export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+    module load {{ constants.tools.petagene.module }}
     module load {{ constants.tools.gatk.module }}
 
     mkdir -p "{{ results_dir }}"

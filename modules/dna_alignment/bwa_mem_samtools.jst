@@ -34,6 +34,11 @@
     set -eu
     set -o pipefail
 
+    {% if petaGene %}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+      module load {{ constants.tools.petagene.module }}
+    {% endif %}
+
     rm -r "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ fastq.basename }}/" || true
     mkdir -p "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ fastq.basename }}/"
 
@@ -69,6 +74,11 @@
   cmd: |
     set -eu
     set -o pipefail
+
+    {% if petaGene %}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+      module load {{ constants.tools.petagene.module }}
+    {% endif %}
 
     module load {{ constants.tools.bwa.module }}
     module load {{ constants.tools.samtools.module }}
@@ -139,6 +149,11 @@
     set -eu
     set -o pipefail
 
+    {% if petaGene %}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+      module load {{ constants.tools.petagene.module }}
+    {% endif %}
+
     module load {{ constants.tools.samtools.module }}
 
     {# No long options available for the following:
@@ -152,11 +167,23 @@
       -f \
       -l 6 \
       "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam" \
-    {% for rgid in sample.read_groups %}
+    {% for rgid, rg in sample.read_groups.items() %}
       {% if not loop.last %}
-      "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/"*.bwa.bam \
+        {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+        {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+        {% set n_chunks = (r1fastq.numberOfReads / 2 / reads_per_chunk)|round(0, method='ceil')|int %}
+        {% for i in range(n_chunks) %}
+          {% set chunk_suffix = '%02d' % i %}
+          "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/"{{ chunk_suffix }}.bwa.bam \
+        {% endfor %}
       {% else %}
-      "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/"*.bwa.bam
+        {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+        {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+        {% set n_chunks = (r1fastq.numberOfReads / 2 / reads_per_chunk)|round(0, method='ceil')|int %}
+        {% for i in range(n_chunks) %}
+          {% set chunk_suffix = '%02d' % i %}
+          "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/"{{ chunk_suffix }}.bwa.bam
+        {% endfor %}
       {% endif %}
     {% endfor %}
 
@@ -185,6 +212,11 @@
   cmd: |
     set -eu
     set -o pipefail
+
+    {% if petaGene %}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+      module load {{ constants.tools.petagene.module }}
+    {% endif %}
 
     module load {{ constants.tools.samtools.module }}
 
