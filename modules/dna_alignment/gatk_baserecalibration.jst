@@ -15,7 +15,7 @@
     set -eu
     set -o pipefail
 
-    {% if petaGene %}
+    {% if petaGene == 'true' %}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
       module load {{ constants.tools.petagene.module }}
     {% endif %}
@@ -52,7 +52,7 @@
     set -eu
     set -o pipefail
 
-    {% if petaGene %}
+    {% if petaGene == 'true' %}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
       module load {{ constants.tools.petagene.module }}
     {% endif %}
@@ -83,7 +83,7 @@
     set -eu
     set -o pipefail
 
-    {% if petaGene %}
+    {% if petaGene == 'true' %}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
       module load {{ constants.tools.petagene.module }}
     {% endif %}
@@ -125,7 +125,7 @@
     set -eu
     set -o pipefail
 
-    {% if petaGene %}
+    {% if petaGene == 'true' %}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
       module load {{ constants.tools.petagene.module }}
     {% endif %}
@@ -167,7 +167,7 @@
     set -eu
     set -o pipefail
 
-    {% if petaGene %}
+    {% if petaGene == 'true' %}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
       module load {{ constants.tools.petagene.module }}
     {% endif %}
@@ -175,7 +175,7 @@
     module load {{ constants.tools.samtools.module }}
 
     mkdir -p "{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/"
-    {% if petaGene %}
+    {% if petaGene == 'true' %}
       mv \
         "temp/{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.md.pgbam" \
         "{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.pgbam"
