@@ -16,6 +16,7 @@
 {% for rgid, rg in sample.read_groups.items() %}
 {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
 {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+{% set petaGene = petaGene|default(false) %}
 
 {# Comment about the math, using the assumed legacy illumina interpretation, it is a TGen modification #}
 {% set n_lines = (reads_per_chunk * 4)|int %}
@@ -33,6 +34,11 @@
   cmd: |
     set -eu
     set -o pipefail
+
+    {% if petaGene == true %}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+      module load {{ constants.tools.petagene.module }}
+    {% endif %}
 
     rm -r "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ fastq.basename }}/" || true
     mkdir -p "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ fastq.basename }}/"
