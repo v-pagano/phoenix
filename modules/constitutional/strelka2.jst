@@ -31,7 +31,9 @@
   cpus: 20
   mem: 20G
   walltime: "24:00:00"
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -115,7 +117,9 @@
     - {{ pass_vcf }}.tbi
   cpus: 1
   mem: 2G
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 

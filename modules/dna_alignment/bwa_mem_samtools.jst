@@ -31,7 +31,9 @@
     - temp/fastqs/{{ fastq.basename }}
   cpus: 1
   walltime: "4:00:00"
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -72,7 +74,9 @@
   walltime: "48:00:00"
   cpus: 10
   mem: 50G
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -141,7 +145,9 @@
   walltime: "24:00:00"
   cpus: 8
   mem: 8G
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -188,7 +194,9 @@
   walltime: "48:00:00"
   cpus: 4
   mem: 16G
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 

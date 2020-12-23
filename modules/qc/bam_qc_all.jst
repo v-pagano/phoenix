@@ -91,7 +91,9 @@
   walltime: "4:00:00"
   cpus: 4
   mem: 8G
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -221,7 +223,9 @@
   walltime: "4:00:00"
   cpus: 4
   mem: 8G
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -281,7 +285,9 @@
   walltime: "4:00:00"
   cpus: 1
   mem: 2G
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -385,7 +391,9 @@
   walltime: "24:00:00"
   cpus: 2
   mem: 8G
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -494,7 +502,9 @@
   walltime: "24:00:00"
   cpus: 4
   mem: 8G
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -596,7 +606,9 @@
   {% endif %}
   cpus: 2
   mem: 4G
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 

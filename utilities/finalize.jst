@@ -4,7 +4,9 @@
   after-re: .*
   cpus: 1
   walltime: "4:00:00"
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -uev
     module load {{ constants.tools.multiqc.module }}
 

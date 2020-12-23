@@ -51,7 +51,9 @@
   cpus: 20
   mem: 80G
   walltime: "48:00:00"
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
     module load {{ constants.tools.star.module }}
@@ -182,7 +184,9 @@
   output: {{ star_bam_sorted }}
   cpus: 8
   mem: 16G
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
     module load {{ constants.tools.samtools.module }}
@@ -215,7 +219,9 @@
   output: {{ star_bam_final }}
   cpus: 10
   mem: 80G
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
 
@@ -267,7 +273,9 @@ which appears to be working now after some code changes, keeping this here in ca
     - {{ results_dir }}/stats/{{ sample.name }}.star.bam.md_metrics
   cpus: 10
   mem: 40G
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
     module load {{ constants.tools.samtools.module }}
@@ -350,7 +358,9 @@ which appears to be working now after some code changes, keeping this here in ca
   cpus: 2
   mem: 4G
   walltime: "48:00:00"
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
     module load {{ constants.tools.htseq.module }}
@@ -402,7 +412,9 @@ which appears to be working now after some code changes, keeping this here in ca
   cpus: 8
   mem: 8G
   walltime: "8:00:00"
+  sbatch_args: ['--profile=ltask', '--acctg-freq=task=1']
   cmd: |
+    sbatch -n1 -d$SLURM_JOB_ID --wrap="sh5util -j $SLURM_JOB_ID"
     set -eu
     set -o pipefail
     module load {{ constants.tools.subread.module }}
