@@ -69,7 +69,7 @@
 
     {% for fq in files %}
       {% if fq.fileType == 'fasterq' %}
-        rsync "temp/fastqs/{{ fq.basename|replace(".fastq.gz",".fasterq") }}" "{{ temp_dir }}/{{ fq.basename }}"
+        rsync "temp/fastqs/{{ fq.basename|replace(".fastq.gz",".fasterq") }}" "{{ temp_dir }}/{{ fq.basename|replace(".fastq.gz",".fasterq") }}"
       {% else %}
         ln -rs "temp/fastqs/{{ fq.basename }}" "{{ temp_dir }}/{{ fq.basename }}"
       {% endif %}
