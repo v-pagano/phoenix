@@ -16,6 +16,7 @@
 {% set temp_dir %}temp/{{ sample.gltype }}/expression_estimates/starSOLO/{{ sample.name }}{% endset %}
 {% set task %}starsolo_count_{{ sample.name }}{% endset %}
 {% set json %}{{ alignment_outdir }}/stats/{{ sample.name }}.starSOLO.bam.Barcodes.stats.json{% endset %}
+{% set petaGene = petaGene|default(false) %}
 
 {# Local Temp Variables #}
 {% set cb_umi_list = [] %}
@@ -53,6 +54,11 @@
     set -eu
     set -o pipefail
 
+    {% if petaGene == true %}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+      module load {{ constants.tools.petagene.module }}
+    {% endif %}
+
     module load {{ constants.tools.star.module }}
     module load {{ constants.tools.samtools.module }}
 
@@ -62,7 +68,11 @@
     mkdir -p "{{ alignment_outdir }}/stats"
 
     {% for fq in files %}
-    ln -rs "temp/fastqs/{{ fq.basename }}" "{{ temp_dir }}/{{ fq.basename }}"
+      {% if fq.fileType == 'fasterq' %}
+        rsync "temp/fastqs/{{ fq.basename|replace(".fastq.gz",".fasterq") }}" "{{ temp_dir }}/{{ fq.basename }}"
+      {% else %}
+        ln -rs "temp/fastqs/{{ fq.basename }}" "{{ temp_dir }}/{{ fq.basename }}"
+      {% endif %}
     {% endfor %}
 
     {#

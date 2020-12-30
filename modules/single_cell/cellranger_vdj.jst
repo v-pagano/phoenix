@@ -14,6 +14,7 @@
 {% set cellranger_out %}{{ temp_dir }}/{{ sample.name }}/outs{% endset %}
 {% set task %}cellranger_vdj_{{ sample.name }}{% endset %}
 {% set json %}{{ outdir }}/stats/{{ sample.name }}.cellranger_vdj.bam.metrics_summary.json{% endset %}
+{% set petaGene = petaGene|default(false) %}
 
 {% set samples_list = [] %}
 {% for rgpu, _ in files|groupby('rgpu') %}
@@ -68,6 +69,11 @@
     set -eu
     set -o pipefail
 
+    {% if petaGene == true %}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+      module load {{ constants.tools.petagene.module }}
+    {% endif %}
+
     module load {{ constants.tools.cellranger.module }}
 
     rm -r "{{ temp_dir }}" || true
@@ -75,7 +81,11 @@
     mkdir -p "{{ outdir }}/stats"
 
     {% for fq in files %}
-    ln -rs "temp/fastqs/{{ fq.basename }}" "{{ temp_dir }}/{{ fq.basename }}"
+      {% if fq.fileType == 'fasterq' %}
+        rsync "temp/fastqs/{{ fq.basename|replace(".fastq.gz",".fasterq") }}" "{{ temp_dir }}/{{ fq.basename|replace(".fastq.gz",".fasterq") }}"
+      {% else %}
+        ln -rs "temp/fastqs/{{ fq.basename }}" "{{ temp_dir }}/{{ fq.basename }}"
+      {% endif %}
     {% endfor %}
 
     {#
