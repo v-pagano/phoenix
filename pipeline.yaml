@@ -201,10 +201,15 @@ constants:
         Rare variant phasing and haplotypic expression from RNA sequencing with phASER
         Stephane E. Castel1,2, Pejman Mohammadi1,2, Wendy K. Chung3, Yufeng Shen2,4 & Tuuli Lappalainen1,2
         Nature Communications volume 7, Article number: 12817 (2016)
+    parabricks:
+      module: parabricks/3.2.0
+      version: 3.1.6
     petagene:
       module: petagene/1.3.0p3-1
       version: 1.3.0p3-1
-      PetaLinkMode: "+fastq +write"
+      PetaLinkMode: "+fastq"
+      directory: /packages/petagene-1.3.0p3-1/petasuite
+      LD_PRELOAD: /packages/petagene-1.3.0p3-1/petasuite/bin/petalink.so
     python_2_7_15:
       module: Python/2.7.15-GCCcore-8.2.0
       version: 2.7.15
@@ -352,11 +357,9 @@ constants:
     genome_subversion_name: hg38tgen
     gene_model_name: ensembl_v98
     capture_kit_path: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/gene_model/ensembl_v98/tool_resources/capture_kits
-    reference_fasta: /home/tgenref/homo_sapiens/grch38_hg38/broad_resource_bundle/Homo_sapiens_assembly38.fasta
-    gpu_reference_fasta: /home/vpagano/play/GRCh38tgen_decoy_alts_hla.fa
+    reference_fasta: /scratch/vpagano/play/GRCh38tgen_decoy_alts_hla.fa
     reference_fasta_2bit: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/genome_reference/GRCh38tgen_decoy_alts_hla.2bit
     reference_fai: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/genome_reference/GRCh38tgen_decoy_alts_hla.fa.fai
-    gpu_reference_fai: /home/vpagano/play/GRCh38tgen_decoy_alts_hla.fa.fai
     reference_dict: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/genome_reference/GRCh38tgen_decoy_alts_hla.dict
     reference_non_N_bed: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/tool_resources/samtools_stats/GRCh38tgen_decoy_alts_hla_samstats_no_N_1based_primary_contigs_no_chrX_chrY.txt
     chip_fasta: /home/tgenref/homo_sapiens/grch38_hg38/hg38tgen/tool_resources/bowtie2_2.3.5.1/GRCh38tgen_decoy_Ecoli.fa

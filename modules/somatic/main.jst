@@ -1,6 +1,7 @@
 {% from 'modules/somatic/manta.jst' import manta_somatic with context %}
 {% from 'modules/somatic/strelka2.jst' import strelka2_somatic with context %}
 {% from 'modules/somatic/mutect2.jst' import mutect2 with context %}
+{% from 'modules/somatic/pb_mutect.jst' import pb_mutect with context %}
 {% from 'modules/somatic/lancet.jst' import lancet with context %}
 {% from 'modules/somatic/vardict.jst' import vardict_somatic with context %}
 {% from 'modules/somatic/octopus.jst' import octopus_somatic with context %}
@@ -14,6 +15,8 @@
 # WARNING - This pairs together all tumor and constitutional samples (of the same gltype)
 # without comparing any sample identifiers. This means multiple individuals in the same 
 # project will be incorrectly paired together for somatic variant calling.
+
+{% set align_partition = alignPartition|default('CPU')|lower %}
 
 {% macro somatic_variant_calling(samples) %}
 {% if somatic_variant_calling_pairs is defined %}
@@ -98,7 +101,11 @@
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_snp_indel_caller_gatk_mutect2"]|default(true) %}
-        {{- mutect2(pair, aligner='bwa') }}
+        {% if align_partition == 'gpu' %}
+            {{- pb_mutect(pair, aligner='bwa') }}
+        {% else %}
+            {{- mutect2(pair, aligner='bwa') }}
+        {% endif %}
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_structural_caller_manta"]|default(true) %}

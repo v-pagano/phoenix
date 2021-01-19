@@ -10,17 +10,11 @@
   cmd: |
     set -uev
 
-    {% if petaGene == 'true' %}
-      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
-      module load {{ constants.tools.petagene.module }}
-    {% endif %}
-
     mkdir -p temp/fastqs/
 
-    {% if petaGene == 'true' %}
-      rsync "{{ fastq.fasterqPath }}" "temp/fastqs/"
+    {% if fastq.fileType == "fasterq" %}
+      rsync "{{ fastq.fastqPath|replace(".fastq.gz",".fasterq") }}" "temp/fastqs/"
     {% else %}
       rsync "{{ fastq.fastqPath }}" "temp/fastqs/"
     {% endif %}
-
 {% endmacro %}

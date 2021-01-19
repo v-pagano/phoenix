@@ -18,12 +18,12 @@
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.deepvariant.all.g.vcf.gz
   mem: 4G
   walltime: "24:00:00"
-  sbatch_args: ['-p', 'gpu', '--nodelist=dback-gpu01', '-c', '40']
+  sbatch_args: ['-p', 'gpu', '--exclusive']
   cmd: |
     set -eu
     set -o pipefail
 
-    module load parabricks/3.1.6
+    module load {{ constants.tools.parabricks.module }}
 
     PROJECT_ROOT=$PWD
     mkdir -p "{{ results_dir }}"

@@ -14,9 +14,9 @@
   input: {{ bam }}
   output: {{ gvcf }}
   walltime: "10:00:00"
-  sbatch_args: ['-p', 'gpu', '--nodelist=dback-gpu01', '-c', '40']
+  sbatch_args: ['-p', 'gpu', '--exclusive']
   cmd: |
-    module load parabricks/3.1.6
+    module load {{ constants.tools.parabricks.module }}
 
     mkdir -p "{{ results_dir }}"
 

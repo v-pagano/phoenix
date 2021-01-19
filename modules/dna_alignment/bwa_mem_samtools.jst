@@ -34,7 +34,7 @@
     set -eu
     set -o pipefail
 
-    {% if petaGene == 'true' %}
+    {% if petaGene == true %}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
       module load {{ constants.tools.petagene.module }}
     {% endif %}

@@ -1,0 +1,44 @@
+{% from 'utilities/remove_files.jst' import remove_files with context %}
+
+{% macro pb_mutect(pair, aligner='bwa') %}
+{% do pair.callers.append('mutect2') %}
+{% set normal_bam %}{{ pair.normal.gltype }}/alignment/{{ aligner }}/{{ pair.normal.name }}/{{ pair.normal.name }}.{{ aligner }}.bam{% endset %}
+{% set tumor_bam %}{{ pair.tumor.gltype }}/alignment/{{ aligner }}/{{ pair.tumor.name }}/{{ pair.tumor.name }}.{{ aligner }}.bam{% endset %}
+{% set temp_dir %}temp/{{ pair.gltype }}/somatic_variant_calls/mutect2/{{ pair.name }}_{{ aligner }}{% endset %}
+{% set results_dir %}{{ pair.gltype }}/somatic_variant_calls/mutect2/{{ pair.name }}{% endset %}
+{% set all_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.mutect2.all.vcf.gz{% endset %}
+{% set pass_vcf %}{{ results_dir }}/{{ pair.name }}.{{ aligner }}.mutect2.pass.vcf.gz{% endset %}
+{% set petaGene = petaGene|default(false) %}
+
+- name: pb_mutect_{{ pair.name }}_{{ aligner }}
+  tags: [{{ pair.gltype }}, somatic, snp_indel_caller, gatk_mutect2, {{ pair.name }}]
+  input:
+    - {{ normal_bam }}
+    - {{ tumor_bam }}
+  output:
+    - {{ temp_dir }}/{{ pair.name }}_{{ aligner }}.mutect2.vcf.gz
+    - {{ temp_dir }}/{{ pair.name }}_{{ aligner }}.mutect2.vcf.gz.stats
+    - {{ temp_dir }}/{{ pair.name }}_{{ aligner }}.f1r2.tar.gz
+  walltime: "24:00:00"
+  sbatch_args: ['-p', 'gpu', '--exclusive']
+  cmd: |
+    set -eu
+    set -o pipefail
+
+    mkdir -p {{ temp_dir }}
+    module load {{ constants.tools.parabricks.module }}
+    
+
+    pbrun mutectcaller \
+    {% if petaGene %}
+      --with-petagene-dir /packages/petagene-1.3.0p3-1/petasuite \
+    {% endif %}
+    --ref {{ constants.phoenix.reference_fasta }} \
+    --in-tumor-bam {{ tumor_bam }} \
+    --tumor-name {{ pair.tumor.rgsm }} \
+    --in-normal-bam {{ normal_bam }} \
+    --normal-name {{ pair.normal.rgsm }} \
+    --tmp-dir {{ temp_dir }}/temp_mutect2/ \
+    --out-vcf {{ temp_dir }}/{{ pair.name }}_{{ aligner }}.mutect2.vcf
+
+{% endmacro %}

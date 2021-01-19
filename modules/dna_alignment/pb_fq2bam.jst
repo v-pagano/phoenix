@@ -8,6 +8,9 @@
 
 {% macro fq2bam(sample) %}
   {% set bam %}{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam{% endset %}
+  {% set petaGene = petaGene|default(false) %}
+
+  
 - name: fq2bam_{{sample.name}}
   tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
   reset: predecessors
@@ -18,51 +21,57 @@
     - temp/fastqs/{{ r1fastq.basename }}
     - temp/fastqs/{{ r2fastq.basename }}
   {% endfor %}
-  output: {{ bam }}
+  output: {{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam
   walltime: "10:00:00"
-  sbatch_args: ['-p', 'gpu', '--nodelist=dback-gpu01', '-c', '40']
+  sbatch_args: ['-p', 'gpu', '--exclusive']
   cmd: |
     rm -r "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}" || true
     mkdir -p "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}"
     mkdir -p "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}"
+    module unload {{ constants.tools.petagene.module }}
 
-  {% for rgid, rg in sample.read_groups.items() %}
-    {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
-    {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
-  {% endfor %}
-    module load parabricks/3.1.6
+    module load {{ constants.tools.parabricks.module }}
+
+    {% if petaGene == true %}
+      export LD_PRELOAD={{ constants.tools.petagene.LD_PRELOAD }}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+    {% endif %}
+
     pbrun fq2bam \
+    {% if petaGene == true %}
+      --with-petagene-dir {{ constants.tools.petagene.directory }} \
+    {% endif %}
     --ref "{{ constants.phoenix.reference_fasta }}" \
     --bwa-options "-Y -K 100000000" \
-  {% for rgid, rg in sample.read_groups.items() %}
-    {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
-    {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
-    --in-fq "temp/fastqs/{{ r1fastq.basename }}" "temp/fastqs/{{ r2fastq.basename }}" \
-  {% endfor %}
+    {% for rgid, rg in sample.read_groups.items() %}
+      {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+      {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+      --in-fq "temp/fastqs/{{ r1fastq.basename }}" "temp/fastqs/{{ r2fastq.basename }}" "{{ read_group_line(rg, format='bwa') }}" \
+    {% endfor %}
     --out-bam "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam" \
-  {% if sample.gltype | lower == 'genome' %}
-  {% if tasks.Genome_alignment_base_recalibration_gatk is defined and tasks.Genome_alignment_base_recalibration_gatk %}
-    {% for vcf in constants.phoenix.gatk_known_sites %}
-      --knownSites "{{ vcf }}" \
-    {% endfor %}
-      --out-recal-file "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}.recal_data.table"
-  {% endif %}
-  {% endif %}
-  {% if sample.gltype | lower == 'exome' %}
-  {% if tasks.Exome_alignment_base_recalibration_gatk is defined and tasks.Exome_alignment_base_recalibration_gatk %}
-    {% for vcf in constants.phoenix.gatk_known_sites %}
-      --knownSites "{{ vcf }}" \
-    {% endfor %}
-      --out-recal-file "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}.recal_data.table"
-  {% endif %}
-  {% endif %}
-  {% if sample.gltype | lower == 'genome' %}
-  {% if tasks.Genome_alignment_base_recalibration_gatk is defined and tasks.Genome_alignment_base_recalibration_gatk %}
-    {% for vcf in constants.phoenix.gatk_known_sites %}
-      --knownSites "{{ vcf }}" \
-    {% endfor %}
-      --out-recal-file "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}.recal_data.table"
-  {% endif %}
-  {% endif %}
+    {% if sample.gltype | lower == 'genome' %}
+      {% if tasks.Genome_alignment_base_recalibration_gatk is defined and tasks.Genome_alignment_base_recalibration_gatk %}
+        {% for vcf in constants.phoenix.gatk_known_sites %}
+          --knownSites "{{ vcf }}" \
+        {% endfor %}
+          --out-recal-file "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}.recal_data.table"
+      {% endif %}
+    {% endif %}
+    {% if sample.gltype | lower == 'exome' %}
+      {% if tasks.Exome_alignment_base_recalibration_gatk is defined and tasks.Exome_alignment_base_recalibration_gatk %}
+        {% for vcf in constants.phoenix.gatk_known_sites %}
+          --knownSites "{{ vcf }}" \
+        {% endfor %}
+          --out-recal-file "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}.recal_data.table"
+      {% endif %}
+    {% endif %}
+    {% if sample.gltype | lower == 'genome' %}
+      {% if tasks.Genome_alignment_base_recalibration_gatk is defined and tasks.Genome_alignment_base_recalibration_gatk %}
+        {% for vcf in constants.phoenix.gatk_known_sites %}
+          --knownSites "{{ vcf }}" \
+        {% endfor %}
+        --out-recal-file "{{ sample.gltype }}/alignment/bwa/{{ sample.name }}.recal_data.table"
+      {% endif %}
+    {% endif %}
 {% endmacro %}
 
