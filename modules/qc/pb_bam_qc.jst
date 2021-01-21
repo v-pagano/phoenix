@@ -8,7 +8,7 @@
   {% set dna_metrics %}{{ results_dir }}/{{ bam|basename }}.wgs_metrics{% endset %}
   {% set output_file %}{{ results_dir }}/{{ bam|basename }}.hs_metrics{% endset %}
 
-- name: pb_gatk_collectmultiplemetrics_{{ task }}
+- name: pb_collectmultiplemetrics_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, stats, gatk_CollectMultipleMetrics, {{ sample.name }}]
   input: {{ bam }}
   output:

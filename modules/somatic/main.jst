@@ -1,5 +1,7 @@
 {% from 'modules/somatic/manta.jst' import manta_somatic with context %}
+{% from 'modules/somatic/pb_manta.jst' import pb_manta with context %}
 {% from 'modules/somatic/strelka2.jst' import strelka2_somatic with context %}
+{% from 'modules/somatic/pb_strelka.jst' import pb_strelka with context %}
 {% from 'modules/somatic/mutect2.jst' import mutect2 with context %}
 {% from 'modules/somatic/pb_mutect.jst' import pb_mutect with context %}
 {% from 'modules/somatic/lancet.jst' import lancet with context %}
@@ -109,11 +111,19 @@
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_structural_caller_manta"]|default(true) %}
-        {{- manta_somatic(pair, aligner='bwa') }}
+        {% if align_partition == 'gpu' %}
+            {{- pb_manta(pair, aligner='bwa') }}
+        {% else %}
+            {{- manta_somatic(pair, aligner='bwa') }}
+        {% endif %}
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_snp_indel_caller_strelka2"]|default(true) %}
-        {{- strelka2_somatic(pair, aligner='bwa') }}
+        {% if align_partition == 'gpu' %}
+            {{- pb_strelka(pair, aligner='bwa') }}
+        {% else %}
+            {{- strelka2_somatic(pair, aligner='bwa') }}
+        {% endif %}
     {% endif %}
 
     {% if tasks[taskPrefix+"_somatic_snp_indel_caller_lancet"]|default(true) %}
