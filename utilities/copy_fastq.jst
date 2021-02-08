@@ -1,10 +1,13 @@
-{% macro copy_fastq(fastq) %}
+{% macro copy_fastq(fastq, singleNode) %}
 
 - name: copy_fastqs_{{ fastq.basename | replace(".", "_") }}
   output: temp/fastqs/{{ fastq.basename }}
   tags: [rsync,]
   sbatch_args: ['-p', 'overflow,defq']
   retry: 2
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 6
   walltime: "4:00:00"
   cmd: |

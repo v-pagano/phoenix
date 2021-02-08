@@ -1,4 +1,4 @@
-{% macro remove_files(directory, before, after) %}
+{% macro remove_files(directory, before, after, singleNode) %}
 
 {% if after is string %}
     {% set task_name %}{{ after }}{% endset %}
@@ -19,6 +19,9 @@
     {% endfor %}
     {% endif %}
   walltime: "0:10:00"
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 1
   mem: 2G
   cmd: |

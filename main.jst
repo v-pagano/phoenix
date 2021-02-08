@@ -57,6 +57,7 @@
 
 {% set samples = {} %}
 {% set fastq_validation = [] %}
+{% set singleNode = singleNode|default('false') %}
 
 {% for file in dataFiles %}
     {% set bn = file.fastqPath | basename %}
@@ -137,7 +138,7 @@
 
 {# Copy fastqs to project dir #}
 {% for fastq in dataFiles %}
-    {{- copy_fastq(fastq) }}
+    {{- copy_fastq(fastq, singleNode) }}
 {% endfor %}
 
 {# project level quality control #}
@@ -146,7 +147,7 @@
 {% endif %}
 
 {# Finalize after running all other tasks #}
-{{- finalize() }}
+{{- finalize(singleNode) }}
 
 {# Start of module calls #}
 {# These if statements are kind of dead right now because they aren't passed by LIMS, but everything runs because of default(true) #}
