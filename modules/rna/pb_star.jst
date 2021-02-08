@@ -49,7 +49,7 @@
     {% endfor %}
   output: {{ star_bam_unsort }}
   walltime: "48:00:00"
-  sbatch_args: ['-p', 'gpu-dev', '--nodelist=dback-gpu03', '--exclusive']
+  sbatch_args: ['-p', 'gpu', '--exclusive']
   cmd: |
     set -eu
     set -o pipefail
