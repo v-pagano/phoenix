@@ -22,8 +22,12 @@
     - temp/fastqs/{{ r2fastq.basename }}
   {% endfor %}
   output: {{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam
-  walltime: "10:00:00"
+  walltime: "24:00:00"
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}', '--exclusive']
+  {% else %}
   sbatch_args: ['-p', 'gpu', '--exclusive']
+  {% endif %}
   cmd: |
     rm -r "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}" || true
     mkdir -p "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}"
@@ -32,10 +36,10 @@
 
     module load {{ constants.tools.parabricks.module }}
 
-    {% if petaGene == true %}
+  {% if petaGene == true %}
       export LD_PRELOAD={{ constants.tools.petagene.LD_PRELOAD }}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
-    {% endif %}
+  {% endif %}
 
     pbrun fq2bam \
     {% if petaGene == true %}

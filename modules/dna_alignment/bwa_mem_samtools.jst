@@ -26,40 +26,40 @@
 
     {% if not singleNode %}
       {% for fastq in [r1fastq, r2fastq] %}
-      - name: split_fastq_{{ fastq.basename | replace(".", "_") }}
-        tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, split, {{ sample.name }}]
-        reset: predecessors
-        input:
-          - temp/fastqs/{{ fastq.basename }}
-        cpus: 1
-        walltime: "4:00:00"
-        cmd: |
-          set -eu
-          set -o pipefail
+- name: split_fastq_{{ fastq.basename | replace(".", "_") }}
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, split, {{ sample.name }}]
+  reset: predecessors
+  input:
+    - temp/fastqs/{{ fastq.basename }}
+  cpus: 1
+  walltime: "4:00:00"
+  cmd: |
+    set -eu
+    set -o pipefail
 
-          {% if petaGene == true %}
-            export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
-            module load {{ constants.tools.petagene.module }}
-          {% endif %}
+  {% if petaGene == true %}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+      module load {{ constants.tools.petagene.module }}
+  {% endif %}
 
-          rm -r "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ fastq.basename }}/" || true
-          mkdir -p "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ fastq.basename }}/"
+    rm -r "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ fastq.basename }}/" || true
+    mkdir -p "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ fastq.basename }}/"
 
-          zcat "temp/fastqs/{{ fastq.basename }}" |\
-            split \
-              --numeric-suffixes \
-              --suffix-length 2 \
-              --lines {{ n_lines }} \
-              - \
-              "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ fastq.basename }}/"
+    zcat "temp/fastqs/{{ fastq.basename }}" |\
+      split \
+        --numeric-suffixes \
+        --suffix-length 2 \
+        --lines {{ n_lines }} \
+        - \
+        "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ fastq.basename }}/"
 
-          N_CREATED=$(ls "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ fastq.basename }}/" | wc -l)
+    N_CREATED=$(ls "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ fastq.basename }}/" | wc -l)
 
-          if [[ ${N_CREATED} -ne {{ n_chunks }} ]]
-          then
-            echo "Chunks created does not match expected value"
-            exit 1
-          fi
+    if [[ ${N_CREATED} -ne {{ n_chunks }} ]]
+    then
+      echo "Chunks created does not match expected value"
+      exit 1
+    fi
 
       {% endfor %}
     {% endif %}
@@ -69,6 +69,9 @@
     {# run bwa directly on the copied fastq files #}
 - name: bwa_mem_samtools_fixmate_{{ sample.name }}_{{ rgid }}
   tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
+  input:
+    - "temp/fastqs/{{ r1fastq.basename }}"
+    - "temp/fastqs/{{ r2fastq.basename }}" 
   reset: predecessors
   walltime: "48:00:00"
   cpus: 10
@@ -78,10 +81,10 @@
     set -eu
     set -o pipefail
 
-    {% if petaGene == 'true' %}
+  {% if petaGene == true %}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
       module load {{ constants.tools.petagene.module }}
-    {% endif %}
+  {% endif %}
 
     module load {{ constants.tools.bwa.module }}
     module load {{ constants.tools.samtools.module }}
@@ -125,10 +128,10 @@
     set -eu
     set -o pipefail
 
-    {% if petaGene == 'true' %}
+  {% if petaGene == true %}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
       module load {{ constants.tools.petagene.module }}
-    {% endif %}
+  {% endif %}
 
     module load {{ constants.tools.samtools.module }}
 
@@ -138,7 +141,7 @@
       -f \
       -l 6 \
       "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam" \
-      {% if petaGene == 'true' %}
+      {% if petaGene == true %}
         {% for rgid, rg in sample.read_groups.items() %}
           {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
           {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
@@ -161,101 +164,101 @@
     {% else %}
       {% for i in range(n_chunks) %}
       {% set chunk_suffix = '%02d' % i %}
-      - name: chunked_bwa_mem_samtools_fixmate_{{ sample.name }}_{{ rgid }}_{{ chunk_suffix }}
-        tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
-        reset: predecessors
-        after: 
-          - split_fastq_{{ r1fastq.basename | replace(".", "_") }}
-          - split_fastq_{{ r2fastq.basename | replace(".", "_") }}
-        walltime: "48:00:00"
-        cpus: 10
-        mem: 50G
-        cmd: |
-          set -eu
-          set -o pipefail
+- name: chunked_bwa_mem_samtools_fixmate_{{ sample.name }}_{{ rgid }}_{{ chunk_suffix }}
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
+  reset: predecessors
+  after: 
+    - split_fastq_{{ r1fastq.basename | replace(".", "_") }}
+    - split_fastq_{{ r2fastq.basename | replace(".", "_") }}
+  walltime: "48:00:00"
+  cpus: 10
+  mem: 50G
+  cmd: |
+    set -eu
+    set -o pipefail
 
-          {% if petaGene == 'true' %}
-            export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
-            module load {{ constants.tools.petagene.module }}
-          {% endif %}
+  {% if petaGene == true %}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+      module load {{ constants.tools.petagene.module }}
+  {% endif %}
 
-          module load {{ constants.tools.bwa.module }}
-          module load {{ constants.tools.samtools.module }}
+    module load {{ constants.tools.bwa.module }}
+    module load {{ constants.tools.samtools.module }}
 
-          rm -r "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ chunk_suffix }}_st_sort_temp/" || true
-          mkdir -p "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ chunk_suffix }}_st_sort_temp/"
+    rm -r "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ chunk_suffix }}_st_sort_temp/" || true
+    mkdir -p "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ chunk_suffix }}_st_sort_temp/"
 
-          bwa mem \
-            -v 3 \
-            -Y \
-            -K 100000000 \
-            -t 9 \
-            -R "{{ read_group_line(rg, format='bwa') }}" \
-            "{{ constants.phoenix.bwa_index }}" \
-            "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ r1fastq.basename }}/{{ chunk_suffix }}" \
-            "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ r2fastq.basename }}/{{ chunk_suffix }}" |\
-          samtools fixmate \
-            --threads 1 \
-            -m \
-            - \
-            - |\
-          samtools sort \
-            -T "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ chunk_suffix }}_st_sort_temp/{{ chunk_suffix }}" \
-            -l 2 \
-            -m 3G \
-            --threads 9 \
-            --output-fmt BAM \
-            -o "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ chunk_suffix }}.bwa.bam" \
-            -
+    bwa mem \
+      -v 3 \
+      -Y \
+      -K 100000000 \
+      -t 9 \
+      -R "{{ read_group_line(rg, format='bwa') }}" \
+      "{{ constants.phoenix.bwa_index }}" \
+      "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ r1fastq.basename }}/{{ chunk_suffix }}" \
+      "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ r2fastq.basename }}/{{ chunk_suffix }}" |\
+    samtools fixmate \
+      --threads 1 \
+      -m \
+      - \
+      - |\
+    samtools sort \
+      -T "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ chunk_suffix }}_st_sort_temp/{{ chunk_suffix }}" \
+      -l 2 \
+      -m 3G \
+      --threads 9 \
+      --output-fmt BAM \
+      -o "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/{{ chunk_suffix }}.bwa.bam" \
+      -
 
-      - name: chunked_samtools_merge_rg_bams_{{ sample.name }}
-        tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
-        reset: predecessors
-        after-re: chunked_bwa_mem_samtools_fixmate_{{ sample.name }}_.*
-        output: temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam
-        walltime: "24:00:00"
-        cpus: 8
-        mem: 8G
-        cmd: |
-          set -eu
-          set -o pipefail
+- name: chunked_samtools_merge_rg_bams_{{ sample.name }}
+  tags: [{{ sample.gltype }}, alignment, dna_alignment, bwa, {{ sample.name }}]
+  reset: predecessors
+  after-re: chunked_bwa_mem_samtools_fixmate_{{ sample.name }}_.*
+  output: temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam
+  walltime: "24:00:00"
+  cpus: 8
+  mem: 8G
+  cmd: |
+    set -eu
+    set -o pipefail
 
-          {% if petaGene == 'true' %}
-            export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
-            module load {{ constants.tools.petagene.module }}
-          {% endif %}
+  {% if petaGene == true %}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+      module load {{ constants.tools.petagene.module }}
+  {% endif %}
 
-          module load {{ constants.tools.samtools.module }}
+    module load {{ constants.tools.samtools.module }}
 
-          samtools merge \
-            --threads 8 \
-            -c \
-            -f \
-            -l 6 \
-            "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam" \
-            {% if petaGene == 'true' %}
-              {% for rgid, rg in sample.read_groups.items() %}
-                {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
-                {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
-                {% set n_chunks = (r1fastq.numberOfReads / 2 / reads_per_chunk)|round(0, method='ceil')|int %}
-                {% for i in range(n_chunks) %}
-                  {% set chunk_suffix = '%02d' % i %}
-                  "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/"{{ chunk_suffix }}.bwa.bam \
-                {% endfor %}
-              {% endfor %}
-            {% else %}
-              {% for rgid in sample.read_groups %}
-                {% if not loop.last %}
-                  "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/"*.bwa.bam \
-                {% else %}
-                  "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/"*.bwa.bam
-                {% endif %}
-              {% endfor %}
-            {% endif %}
-
-          {% for rgid in sample.read_groups %}
-            rm -r "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/"
+    samtools merge \
+      --threads 8 \
+      -c \
+      -f \
+      -l 6 \
+      "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.bam" \
+      {% if petaGene == true %}
+        {% for rgid, rg in sample.read_groups.items() %}
+          {% set r1fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R1')|first %}
+          {% set r2fastq = rg.data_files|selectattr('fastqCode', 'eq', 'R2')|first %}
+          {% set n_chunks = (r1fastq.numberOfReads / 2 / reads_per_chunk)|round(0, method='ceil')|int %}
+          {% for i in range(n_chunks) %}
+            {% set chunk_suffix = '%02d' % i %}
+            "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/"{{ chunk_suffix }}.bwa.bam \
           {% endfor %}
+        {% endfor %}
+      {% else %}
+        {% for rgid in sample.read_groups %}
+          {% if not loop.last %}
+            "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/"*.bwa.bam \
+          {% else %}
+            "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/"*.bwa.bam
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+
+    {% for rgid in sample.read_groups %}
+      rm -r "temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ rgid }}/"
+    {% endfor %}
       {% endfor %}
     {% endif %}
   {% endfor %}
@@ -271,17 +274,19 @@
     - temp/{{ sample.gltype }}/alignment/bwa/{{ sample.name }}/{{ sample.name }}.bwa.md.bam
     - {{ sample.gltype }}/alignment/bwa/{{ sample.name }}/stats/{{ sample.name }}.bwa.bam.samtools.markdup.txt
   walltime: "48:00:00"
+  {% if singleNode %}
   sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 4
   mem: 16G
   cmd: |
     set -eu
     set -o pipefail
 
-    {% if petaGene == 'true' %}
+  {% if petaGene == true %}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
       module load {{ constants.tools.petagene.module }}
-    {% endif %}
+  {% endif %}
 
     module load {{ constants.tools.samtools.module }}
 
