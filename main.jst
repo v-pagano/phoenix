@@ -57,7 +57,7 @@
 
 {% set samples = {} %}
 {% set fastq_validation = [] %}
-{% set singleNode = singleNode|default('false') %}
+{% set singleNode = singleNode|default(false) %}
 
 {% for file in dataFiles %}
     {% set bn = file.fastqPath | basename %}

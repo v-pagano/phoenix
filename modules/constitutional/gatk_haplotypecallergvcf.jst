@@ -7,6 +7,8 @@
 {% set temp_dir %}temp/{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}_{{ aligner }}{% endset %}
 {% set results_dir %}{{ sample.gltype }}/constitutional_variant_calls/haplotypecaller/{{ sample.name }}{% endset %}
 {% set gvcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.hc.g.vcf.gz{% endset %}
+{% set singleNode = singleNode|default(false) %}
+
 
 {% for batch in constants.phoenix.calling_intervals %}
 - name: haplotypecaller_gvcf_{{ sample.name }}_{{ aligner }}_{{ loop.index }}
@@ -14,16 +16,19 @@
   input: {{ bam }}
   output: {{ temp_dir }}/{{ loop.index }}.g.vcf.gz
   walltime: "24:00:00"
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 2
   mem: 16G
   cmd: |
     set -eu
     set -o pipefail
 
-    {% if petaGene == 'true' %}
+  {% if petaGene == true %}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
       module load {{ constants.tools.petagene.module }}
-    {% endif %}
+  {% endif %}
 
     module load {{ constants.tools.gatk.module }}
 
@@ -34,9 +39,9 @@
       -ERC GVCF \
       --reference {{ constants.phoenix.reference_fasta }} \
       --input "{{ bam }}" \
-      {% for interval in batch %}
+  {% for interval in batch %}
       -L "{{ interval.contig }}:{{ interval.start }}-{{ interval.stop }}" \
-      {% endfor %}
+  {% endfor %}
       -O "{{ temp_dir }}/{{ loop.index }}.g.vcf.gz"
 
 {% endfor %}
@@ -53,16 +58,19 @@
     - {{ gvcf }}
     - {{ gvcf }}.tbi
   walltime: "24:00:00"
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 1
   mem: 8G
   cmd: |
     set -eu
     set -o pipefail
 
-    {% if petaGene == 'true' %}
+  {% if petaGene == true %}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
       module load {{ constants.tools.petagene.module }}
-    {% endif %}
+  {% endif %}
 
     module load {{ constants.tools.gatk.module }}
 
@@ -89,6 +97,5 @@
     {% else %}
     {{- remove_files(directory,none,task) }}
     {% endif %}
-
 {% endmacro %}
 

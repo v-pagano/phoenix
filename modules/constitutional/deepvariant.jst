@@ -21,16 +21,19 @@
     - {{ temp_dir }}/{{ sample.name }}.ex.tfrecord-{{ iteration }}-of-{{ stop }}.gz
     - {{ temp_dir }}/{{ sample.name }}.gvcf.tfrecord-{{ iteration }}-of-{{ stop }}.gz
   cpus: 1
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   mem: 4G
   walltime: "24:00:00"
   cmd: |
     set -eu
     set -o pipefail
 
-    {% if petaGene == 'true' %}
+  {% if petaGene == 'true' %}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
       module load {{ constants.tools.petagene.module }}
-    {% endif %}
+  {% endif %}
 
     module load {{ constants.tools.deepvariant.module }}
 
@@ -75,10 +78,10 @@
     set -eu
     set -o pipefail
 
-    {% if petaGene == 'true' %}
+  {% if petaGene == 'true' %}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
       module load {{ constants.tools.petagene.module }}
-    {% endif %}
+  {% endif %}
 
     module load {{ constants.tools.deepvariant.module }}
 
@@ -106,16 +109,19 @@
     - {{ all_vcf }}.tbi
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.deepvariant.all.g.vcf.gz
   cpus: 1
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   mem: 16G
   walltime: "24:00:00"
   cmd: |
     set -eu
     set -o pipefail
 
-    {% if petaGene == 'true' %}
+  {% if petaGene == 'true' %}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
       module load {{ constants.tools.petagene.module }}
-    {% endif %}
+  {% endif %}
 
     module load {{ constants.tools.deepvariant.module }}
     module load {{ constants.tools.bcftools.module }}
@@ -144,16 +150,19 @@
     - {{ pass_vcf }}
     - {{ pass_vcf }}.tbi
   cpus: 1
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   mem: 4G
   walltime: "24:00:00"
   cmd: |
     set -eu
     set -o pipefail
 
-    {% if petaGene == 'true' %}
+  {% if petaGene == 'true' %}
       export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
       module load {{ constants.tools.petagene.module }}
-    {% endif %}
+  {% endif %}
 
     module load {{ constants.tools.bcftools.module }}
 

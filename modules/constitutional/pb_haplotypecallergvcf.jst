@@ -10,18 +10,29 @@
 {% set vcf %}{{ results_dir }}/{{ sample.name }}.{{ aligner }}.hc.g.vcf{% endset %}
 
 - name: pb_haplotypecaller_gvcf_{{ sample.name }}_{{ aligner }}
-  reset: predecessors
   input: {{ bam }}
   output: {{ gvcf }}
   walltime: "10:00:00"
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}', '--exclusive']
+  {% else %}
   sbatch_args: ['-p', 'gpu', '--exclusive']
+  {% endif %}
   cmd: |
     module load {{ constants.tools.parabricks.module }}
 
     mkdir -p "{{ results_dir }}"
 
+  {% if petaGene == true %}
+      export LD_PRELOAD={{ constants.tools.petagene.LD_PRELOAD }}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+  {% endif %}
+
     pbrun haplotypecaller \
       --ref {{ constants.phoenix.reference_fasta }} \
+    {% if petaGene == true %}
+      --with-petagene-dir {{ constants.tools.petagene.directory }} \
+    {% endif %}
       --in-bam "{{ bam }}" \
       --out-variants {{ vcf }}
 

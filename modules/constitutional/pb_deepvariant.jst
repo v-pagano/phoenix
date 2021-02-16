@@ -10,7 +10,6 @@
 
 - name: pb_deepvariant_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, deepvariant, {{ sample.name }}]
-  reset: predecessors
   input: {{ bam }}
   output:
     - {{ all_vcf }}
@@ -18,7 +17,11 @@
     - {{ results_dir }}/{{ sample.name }}.{{ aligner }}.deepvariant.all.g.vcf.gz
   mem: 4G
   walltime: "24:00:00"
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}', '--exclusive']
+  {% else %}
   sbatch_args: ['-p', 'gpu', '--exclusive']
+  {% endif %}
   cmd: |
     set -eu
     set -o pipefail
@@ -28,13 +31,20 @@
     PROJECT_ROOT=$PWD
     mkdir -p "{{ results_dir }}"
 
+  {% if petaGene == true %}
+      export LD_PRELOAD={{ constants.tools.petagene.LD_PRELOAD }}
+      export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+  {% endif %}
+
     pbrun deepvariant --ref "{{ constants.phoenix.reference_fasta }}" \
     --in-bam "${PROJECT_ROOT}/{{ bam }}" \
+    {% if petaGene == true %}
+      --with-petagene-dir {{ constants.tools.petagene.directory }} \
+    {% endif %}
     --out-variants "${PROJECT_ROOT}/{{ all_vcf }}"
 
 - name: deepvariant_filter_variants_{{ sample.name }}_{{ aligner }}
   tags: [{{ sample.gltype}}, constitutional, snp_indel_caller, deepvariant, {{ sample.name }}]
-  reset: predecessors
   input: {{ all_vcf }}
   output:
     - {{ pass_vcf }}
@@ -52,9 +62,9 @@
     bcftools filter \
       --output-type z \
       --include 'FILTER == "PASS"' \
-      {% if sample.gltype == 'exome' %}
+  {% if sample.gltype == 'exome' %}
       --targets-file "{{ sample.capture_kit.extended_bed }}" \
-      {% endif %}
+  {% endif %}
       "{{ all_vcf }}" \
       > "{{ pass_vcf }}"
 

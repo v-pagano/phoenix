@@ -205,11 +205,11 @@ constants:
       module: parabricks/3.2.0
       version: 3.1.6
     petagene:
-      module: petagene/1.3.0p3-1
-      version: 1.3.0p3-1
-      PetaLinkMode: "+fastq"
-      directory: /packages/petagene-1.3.0p3-1/petasuite
-      LD_PRELOAD: /packages/petagene-1.3.0p3-1/petasuite/bin/petalink.so
+      module: petagene/1.3.0p6
+      version: 1.3.0p6
+      PetaLinkMode: "+fastq -wr"
+      directory: /packages/petagene/1.3.0p6
+      LD_PRELOAD: /packages/petagene/1.3.0p6/bin/petalink.so
     python_2_7_15:
       module: Python/2.7.15-GCCcore-8.2.0
       version: 2.7.15
