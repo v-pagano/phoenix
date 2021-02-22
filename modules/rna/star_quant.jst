@@ -48,6 +48,9 @@
     - {{ fq.path }}
     {% endfor %}
   output: {{ star_bam_unsort }}
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 20
   mem: 80G
   walltime: "48:00:00"
@@ -180,6 +183,9 @@
   reset: predecessors
   input: {{ star_bam_unsort }}
   output: {{ star_bam_sorted }}
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 8
   mem: 16G
   cmd: |
@@ -265,6 +271,9 @@ which appears to be working now after some code changes, keeping this here in ca
     - {{ star_bam_final }}
     - {{ star_bam_final }}.bai
     - {{ results_dir }}/stats/{{ sample.name }}.star.bam.md_metrics
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 10
   mem: 40G
   cmd: |
@@ -347,6 +356,9 @@ which appears to be working now after some code changes, keeping this here in ca
   reset: predecessors
   input: {{ star_bam_unsort }}
   output: {{ sample.gltype }}/quant/htseq/{{ sample.name }}/{{ sample.name }}.htseq_counts.txt
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 2
   mem: 4G
   walltime: "48:00:00"
@@ -399,6 +411,9 @@ which appears to be working now after some code changes, keeping this here in ca
   output: 
     - {{ sample.gltype }}/quant/featurecounts/{{ sample.name }}/{{ sample.name }}.exon.counts.tsv
     - {{ sample.gltype }}/quant/featurecounts/{{ sample.name }}/{{ sample.name }}.gene.counts.tsv
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 8
   mem: 8G
   walltime: "8:00:00"

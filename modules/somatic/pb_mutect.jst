@@ -20,19 +20,30 @@
     - {{ temp_dir }}/{{ pair.name }}_{{ aligner }}.mutect2.vcf.gz.stats
     - {{ temp_dir }}/{{ pair.name }}_{{ aligner }}.f1r2.tar.gz
   walltime: "24:00:00"
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}', '--exclusive']
+  {% else %}
   sbatch_args: ['-p', 'gpu', '--exclusive']
+  {% endif %}
   cmd: |
     set -eu
     set -o pipefail
 
     mkdir -p {{ temp_dir }}
+    module unload {{ constants.tools.petagene.module }}
+
     module load {{ constants.tools.parabricks.module }}
-    
+
+  {% if petaGene == true %}
+    export LD_PRELOAD={{ constants.tools.petagene.LD_PRELOAD }}
+    export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+  {% endif %}
+
 
     pbrun mutectcaller \
-    {% if petaGene %}
-      --with-petagene-dir /packages/petagene-1.3.0p3-1/petasuite \
-    {% endif %}
+  {% if petaGene %}
+      --with-petagene-dir {{ constants.tools.petagene.directory }} \
+  {% endif %}
     --ref {{ constants.phoenix.reference_fasta }} \
     --in-tumor-bam {{ tumor_bam }} \
     --tumor-name {{ pair.tumor.rgsm }} \

@@ -19,6 +19,8 @@
   sbatch_args: ['-p', 'gpu', '--exclusive']
   {% endif %}
   cmd: |
+    module unload {{ constants.tools.petagene.module }}
+
     module load {{ constants.tools.parabricks.module }}
 
     mkdir -p "{{ results_dir }}"

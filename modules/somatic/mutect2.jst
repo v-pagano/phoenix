@@ -19,6 +19,9 @@
     - {{ temp_dir }}/{{ loop.index }}.mutect2.vcf.gz
     - {{ temp_dir }}/{{ loop.index }}.mutect2.vcf.gz.stats
     - {{ temp_dir }}/{{ loop.index }}.f1r2.tar.gz
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 4
   mem: 16G
   walltime: "24:00:00"
@@ -69,6 +72,9 @@
     - {{ normal_bam }}
     - {{ tumor_bam }}
   output: {{ temp_dir }}/{{ loop.index }}.tumor-pileups.table
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
@@ -121,6 +127,9 @@
   methods: Somatic variant calls for {{ pair.name }} were called with
     {{ constants.tools.gatk.verbose }} Mutect2 in parallel chunks and
     then merged together with {{ constants.tools.samtools.verbose }} concat.
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 1
   mem: 4G
   walltime: "24:00:00"
@@ -154,6 +163,9 @@
   methods: Somatic variant calls for {{ pair.name }} were called with
     {{ constants.tools.gatk.verbose }} Mutect2 in parallel chunks and
     then stats files were merged together with {{ constants.tools.gatk.verbose }} for filtering.
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
@@ -183,6 +195,9 @@
   methods: Somatic variant calls for {{ pair.name }} were called with
     {{ constants.tools.gatk.verbose }} Mutect2 in parallel chunks and
     then read orientation files were merged together with {{ constants.tools.gatk.verbose }} for filtering.
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
@@ -215,6 +230,9 @@
   methods: Somatic variant calls for {{ pair.name }} were called with
     {{ constants.tools.gatk.verbose }} Mutect2 in parallel chunks and
     then pileups for contamination analysis were merged together with {{ constants.tools.gatk.verbose }} .
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
@@ -257,6 +275,9 @@
   methods: Somatic variant calls for {{ pair.name }} were called with
     {{ constants.tools.gatk.verbose }} Mutect2 in parallel chunks and
     then pileup files were merged together with {{ constants.tools.gatk.verbose }} for filtering.
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 1
   mem: 4G
   walltime: "24:00:00"
@@ -287,6 +308,9 @@
   output:
     - {{ all_vcf }}
     - {{ all_vcf }}.tbi
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
@@ -318,6 +342,9 @@
   output:
     - {{ pass_vcf }}
     - {{ pass_vcf }}.tbi
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpu: 1
   mem: 4G
   cmd: |

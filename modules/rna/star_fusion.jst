@@ -33,6 +33,9 @@
   output:
     - {{ temp_dir }}/{{ sample.name }}.Aligned.sorted.bam
     - {{ results_dir }}/{{ sample.name }}_Chimeric.out.junction
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 20
   mem: 80G
   walltime: "24:00:00"
@@ -105,6 +108,9 @@
     - {{ results_dir }}/{{ sample.name }}_starfusion.bam.bai
     {% endif %}
   reset: predecessors
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 2
   mem: 8G
   walltime: "24:00:00"
@@ -246,6 +252,9 @@
     - {{ results_dir }}/{{ sample.name }}_finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz
     - {{ results_dir }}/{{ sample.name }}_finspector.gmap_trinity_GG.fusions.gff3.bed.sorted.bed.gz.tbi
     - {{ results_dir }}/{{ sample.name }}_Trinity-GG.fasta
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 2
   mem: 16G
   walltime: "24:00:00"
@@ -318,6 +327,9 @@
     - {{ results_dir }}/{{ sample.name }}_starfusion.cram
     - {{ results_dir }}/{{ sample.name }}_starfusion.cram.crai
   walltime: "8:00:00"
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}']
+  {% endif %}
   cpus: 8
   mem: 4G
   cmd: |
