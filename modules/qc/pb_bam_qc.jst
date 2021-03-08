@@ -7,26 +7,43 @@
   {% set bam %}{{ sample.gltype }}/alignment/{{ aligner }}/{{ sample.name }}/{{ sample.name }}.{{ aligner }}.bam{% endset %}
   {% set dna_metrics %}{{ results_dir }}/{{ bam|basename }}.wgs_metrics{% endset %}
   {% set output_file %}{{ results_dir }}/{{ bam|basename }}.hs_metrics{% endset %}
+  {% set petaGene = petaGene|default(false) %}
+
 
 - name: pb_collectmultiplemetrics_{{ task }}
   tags: [{{ sample.gltype }}, quality_control, stats, gatk_CollectMultipleMetrics, {{ sample.name }}]
   input: {{ bam }}
   output:
     - {{ dna_metrics }}
-  reset: predecessors
   walltime: "24:00:00"
+  {% if singleNode %}
+  sbatch_args: ['-p', '{{ singleNode.partition }}', '--nodelist={{ singleNode.node }}', '--exclusive']
+  {% else %}
   sbatch_args: ['-p', 'gpu', '--exclusive']
+  {% endif %}
   cmd: |
+
+  {% if petaGene == true %}
+    export LD_PRELOAD={{ constants.tools.petagene.LD_PRELOAD }}
+    export PetaLinkMode="{{ constants.tools.petagene.PetaLinkMode }}"
+  {% endif %}
+
     module load {{ constants.tools.parabricks.module }}
 
     mkdir -p {{ results_dir }}
 
     pbrun collectmultiplemetrics \
+    {% if petaGene == true %}
+      --with-petagene-dir {{ constants.tools.petagene.directory }} \
+    {% endif %}
       --ref {{ constants.phoenix.reference_fasta }} \
       --bam {{ bam }} \
       --out-all-metrics {{ results_dir }}
 
     pbrun bammetrics \
+    {% if petaGene == true %}
+      --with-petagene-dir {{ constants.tools.petagene.directory }} \
+    {% endif %}
       --ref {{ constants.phoenix.reference_fasta }} \
       --bam {{ bam }} \
       --out-metrics-file {{ output_file }}

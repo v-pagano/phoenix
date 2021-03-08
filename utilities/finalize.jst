@@ -1,4 +1,5 @@
 {% macro finalize(singleNode) %}
+{% set align_partition = alignPartition|default('CPU')|lower %}
 
 - name: finalize
   after-re: .*
@@ -12,8 +13,9 @@
     module load {{ constants.tools.multiqc.module }}
 
     mkdir --parents qc
+  {% if align_partition != 'gpu' %}
     multiqc --force --outdir qc .
-
+  {% endif %}
     mkdir --parents symbolic_links
     cd symbolic_links
 
